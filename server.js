@@ -36,6 +36,13 @@ app.post("/insert/:collection", function (req, res) {
         res.send({ "error": "No input!" });
         return;
     } else {
+        req.body.blood=0
+        req.body.lv=0
+        req.body.mana=0
+        req.body.phy=0
+        req.body.soul=0
+        req.body.magic=0
+        req.body.time=Date.now()
         console.log(req.body)
         mongoConectClient.connect(err => {
             if (err) {
@@ -48,7 +55,9 @@ app.post("/insert/:collection", function (req, res) {
                         if (err) {
                             res.send({ "error": err });
                         } else {
-                            res.send({ "ok": result.ops[0] });
+                            let sendValue=result.ops[0]
+                            sendValue._id=ObjectId(sendValue._id).toString()
+                            res.send({ "ok": sendValue });
                         }
                     })
             }
