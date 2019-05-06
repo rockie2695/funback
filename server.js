@@ -80,7 +80,7 @@ app.post("/delete/:collection", function (req, res) {
                 res.send({ "error": err });
             } else {
                 let collection = mongoConectClient.db("rockie2695_mongodb").collection("fun_" + req.params.collection);
-                let sendValue=req.body
+                let sendValue = req.body
                 sendValue._id = ObjectId(sendValue._id)
                 deleteRecord(collection,
                     sendValue
@@ -96,8 +96,38 @@ app.post("/delete/:collection", function (req, res) {
                     }
                 )
             }
-
-
+        })
+    }
+});
+app.post("/update/:collection", function (req, res) {
+    if (!req.body) {
+        res.send({ "error": "No input!" });
+        return;
+    } else {
+        mongoConectClient.connect(err => {
+            if (err) {
+                console.log(err)
+                res.send({ "error": err });
+            } else {
+                let collection = mongoConectClient.db("rockie2695_mongodb").collection("fun_" + req.params.collection);
+                let query = req.body.query
+                let whereCon = req.body.whereCon
+                if (typeof whereCon._id != "undefined") { whereCon._id = ObjectId(sendValue._id) }
+                updateRecord(collection,
+                    query, whereCon
+                    , function (err, result) {
+                        if (err) {
+                            res.send({ "error": err });
+                            return;
+                        } else {
+                            console.log(result,result.ok,result.result.ok)
+                            let sendValue = result.result.ok
+                            res.send({ "ok": sendValue });
+                            return;
+                        }
+                    }
+                )
+            }
         })
     }
 });
@@ -108,6 +138,11 @@ function insert(collection, query, callback) {
 }
 function deleteRecord(collection, query, callback) {
     collection.deleteOne(query, function (err, result) {
+        callback(err, result);
+    });
+}
+function updateRecord(collection, query, whereCon, callback) {
+    collection.updateOne(whereCon, { $set: query }, function (err, result) {
         callback(err, result);
     });
 }
