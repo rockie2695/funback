@@ -36,14 +36,7 @@ app.post("/insert/:collection", function (req, res) {
         res.send({ "error": "No input!" });
         return;
     } else {
-        req.body.blood = 0
-        req.body.lv = 0
-        req.body.mana = 0
-        req.body.phy = 0
-        req.body.soul = 0
-        req.body.magic = 0
-        req.body.time = Date.now()
-        console.log(req.body)
+
         mongoConectClient.connect(err => {
             if (err) {
                 console.log(err)
@@ -51,6 +44,14 @@ app.post("/insert/:collection", function (req, res) {
                 return;
             } else {
                 let collection = mongoConectClient.db("rockie2695_mongodb").collection("fun_" + req.params.collection);
+                req.body.blood = 0
+                req.body.lv = 0
+                req.body.mana = 0
+                req.body.phy = 0
+                req.body.soul = 0
+                req.body.magic = 0
+                req.body.time = Date.now()
+                console.log(req.body)
                 insert(collection,
                     req.body
                     , function (err, result) {
@@ -109,10 +110,12 @@ app.post("/update/:collection", function (req, res) {
                 console.log(err)
                 res.send({ "error": err });
             } else {
+                console.log(req)
                 let collection = mongoConectClient.db("rockie2695_mongodb").collection("fun_" + req.params.collection);
+                req.body.query.time = Date.now()
                 let query = req.body.query
                 let whereCon = req.body.whereCon
-                if (typeof whereCon._id != "undefined") { whereCon._id = ObjectId(sendValue._id) }
+                if (typeof whereCon._id != "undefined") { whereCon._id = ObjectId(whereCon._id) }
                 updateRecord(collection,
                     query, whereCon
                     , function (err, result) {
@@ -120,9 +123,12 @@ app.post("/update/:collection", function (req, res) {
                             res.send({ "error": err });
                             return;
                         } else {
-                            console.log(result,result.ok,result.result.ok)
-                            let sendValue = result.result.ok
-                            res.send({ "ok": sendValue });
+                            if(result.result.ok===1){
+                                req.body.query._id=whereCon._id.toString()
+                                res.send({ "ok": req.body.query });
+                            }else{
+                                res.send({ "ok": req.body.query });
+                            }
                             return;
                         }
                     }
