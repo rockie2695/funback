@@ -1,7 +1,7 @@
 //express framework
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 8088;
 
 var bodyParser = require('body-parser');
 
@@ -21,7 +21,7 @@ app.use(cors()) // Use this after the variable declaration
 app.use(bodyParser.json());
 app.listen(port, () => {
     console.log(`Listening on port ${port}`)
-    if (port == 8080) {
+    if (port == 8088) {
         /*(async () => {
             // Specify app arguments
             await open('http://localhost:' + port, {
@@ -52,7 +52,7 @@ app.post("/insert/:collection", function (req, res) {
                 req.body.magic = 0
                 req.body.time = Date.now()
                 console.log(req.body)
-                insert(collection,
+                insertRecord(collection,
                     req.body
                     , function (err, result) {
                         if (err) {
@@ -110,7 +110,6 @@ app.post("/update/:collection", function (req, res) {
                 console.log(err)
                 res.send({ "error": err });
             } else {
-                console.log(req)
                 let collection = mongoConectClient.db("rockie2695_mongodb").collection("fun_" + req.params.collection);
                 req.body.query.time = Date.now()
                 let query = req.body.query
@@ -123,11 +122,11 @@ app.post("/update/:collection", function (req, res) {
                             res.send({ "error": err });
                             return;
                         } else {
-                            if(result.result.ok===1){
-                                req.body.query._id=whereCon._id.toString()
+                            if (result.result.ok === 1) {
+                                req.body.query._id = whereCon._id.toString()
                                 res.send({ "ok": req.body.query });
-                            }else{
-                                res.send({ "ok": req.body.query });
+                            } else {
+                                res.send({ "error": "unknow" });
                             }
                             return;
                         }
@@ -137,7 +136,33 @@ app.post("/update/:collection", function (req, res) {
         })
     }
 });
-function insert(collection, query, callback) {
+app.get("/find/:collection", function (req, res) {
+    if (!req.body) {
+        res.send({ "error": "No input!" });
+        return;
+    } else {
+        mongoConectClient.connect(err => {
+            if (err) {
+                console.log(err)
+                res.send({ "error": err });
+            } else {
+                let collection = mongoConectClient.db("rockie2695_mongodb").collection("fun_" + req.params.collection);
+                findRecord(collection,
+                    function (err, result) {
+                        if (err) {
+                            res.send({ "error": err });
+                            return;
+                        } else {
+                            res.send({ "ok": result });
+                            return;
+                        }
+                    }
+                )
+            }
+        })
+    }
+});
+function insertRecord(collection, query, callback) {
     collection.insertOne(query, function (err, result) {
         callback(err, result);
     });
@@ -152,3 +177,11 @@ function updateRecord(collection, query, whereCon, callback) {
         callback(err, result);
     });
 }
+function findRecord(collection, callback) {
+    collection.find().toArray(function (err, result) {
+        callback(err, result)
+    })
+}
+app.get(/.*/, function (req, res) {
+    res.status(404).send({ method: req.method, "result": req.url + ' Not Supported' });
+});
