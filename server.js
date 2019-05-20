@@ -50,13 +50,13 @@ app.post("/insert/:collection", function (req, res) {
             req.body.phy = 0
             req.body.soul = 0
             req.body.magic = 0
-            req.body.time = Date.now()
         } else if (req.params.collection === "skill") {
-            req.body.value = [[0, "magic"], [0, "soul"]]
-            req.body.type = [1, 2]
-            req.body.lv=0
-            req.body.useMana=0
+            req.body.description = []
+            req.body.type = []
+            req.body.lv = 0
+            req.body.useMana = 0
         }
+        req.body.time = Date.now()
         console.log(req.body)
         insertRecord(collection,
             req.body
